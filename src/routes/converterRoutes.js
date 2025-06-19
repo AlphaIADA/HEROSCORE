@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { scrapeBet9ja } = require('../services/bet9jaScraper');
+const { scrapeBet9jaBooking } = require('../services/bet9jaScraper');
 const { convertToBetwayFormat } = require('../services/betwayConverter');
 
 router.post('/convert', async (req, res) => {
@@ -9,7 +9,7 @@ router.post('/convert', async (req, res) => {
     return res.status(400).json({ error: 'Booking code is required' });
   }
   try {
-    const betSlip = await scrapeBet9ja(bookingCode);
+    const betSlip = await scrapeBet9jaBooking(bookingCode);
     const betwayData = await convertToBetwayFormat(betSlip);
     res.json(betwayData);
   } catch (error) {
@@ -25,7 +25,7 @@ router.post('/convert-ticket', async (req, res) => {
   }
 
   try {
-    const bet9jaSlip = await scrapeBet9ja(bookingCode);
+    const bet9jaSlip = await scrapeBet9jaBooking(bookingCode);
     if (!bet9jaSlip) {
       return res.status(500).json({ error: 'Failed to scrape booking code' });
     }
