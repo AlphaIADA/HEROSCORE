@@ -1,9 +1,21 @@
 const puppeteer = require('puppeteer');
+const SimpleCache = require('../utils/simpleCache');
+const { log } = require('../utils/logger');
+
+const cache = new SimpleCache(5 * 60 * 1000); // 5 minute cache
 
 async function scrapeBet9ja(bookingCode) {
-  const url = 'https://web.bet9ja.com/Sport/Game.aspx?ids=1&bookingCode=' + bookingCode;
+  const cached = cache.get(bookingCode);
+  if (cached) {
+    log(`Bet9ja cache hit for ${bookingCode}`);
+    return cached;
+  }
+
+  const url =
+    'https://web.bet9ja.com/Sport/Game.aspx?ids=1&bookingCode=' + bookingCode;
   const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
+  log(`Scraping Bet9ja for ${bookingCode}`);
   await page.goto(url, { waitUntil: 'networkidle2' });
 
   // Wait for bet slip container to appear
@@ -24,7 +36,9 @@ async function scrapeBet9ja(bookingCode) {
   });
 
   await browser.close();
-  return { bookingCode, bets };
+  const result = { bookingCode, bets };
+  cache.set(bookingCode, result);
+  return result;
 }
 
 module.exports = { scrapeBet9ja };

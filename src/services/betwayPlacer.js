@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const { log } = require('../utils/logger');
 
 /**
  * Log in to Betway and place the provided bet slip.
@@ -12,9 +13,11 @@ async function placeBetOnBetway(betwayData) {
 
   const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
+  log('Launching browser to place bet on Betway');
 
   try {
     await page.goto('https://www.betway.com.ng/', { waitUntil: 'networkidle2' });
+    log('Logging into Betway');
 
     // Login sequence - selectors may need adjustment
     await page.waitForSelector('#LoginForm_username');
@@ -26,6 +29,7 @@ async function placeBetOnBetway(betwayData) {
     // Open bet slip URL
     if (betwayData.url) {
       await page.goto(betwayData.url, { waitUntil: 'networkidle2' });
+      log('Submitting bet slip');
       // Wait for betslip submit button - selector may vary
       await page.waitForSelector('.betslip-submit');
       await page.click('.betslip-submit');

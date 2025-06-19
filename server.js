@@ -9,6 +9,7 @@ const { scrapeBetnaija } = require('./src/services/platforms/betnaijaScraper');
 const { scrapeStake } = require('./src/services/platforms/stakeScraper');
 const { convertToBetway } = require('./src/services/betwayConverter');
 const { placeBetOnBetway } = require('./src/services/betwayPlacer');
+const { log, error: logError } = require('./src/utils/logger');
 
 const app = express();
 app.use(bodyParser.json());
@@ -47,11 +48,13 @@ app.post('/convert-ticket', async (req, res) => {
   }
 
   try {
+    log(`Converting ${bookingCode} from ${platformFrom} to ${platformTo}`);
     const betSlip = await scrapeFn(bookingCode);
     const converted = await convertFn(betSlip);
     return res.json(converted);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
+  } catch (err) {
+    logError(err);
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -78,16 +81,18 @@ app.post('/place-bet', async (req, res) => {
   }
 
   try {
+    log(`Placing bet from ${platformFrom} using code ${bookingCode}`);
     const betSlip = await scrapeFn(bookingCode);
     const betwayData = await convertToBetway(betSlip);
     await placeBetOnBetway(betwayData);
     return res.json({ status: 'bet placed' });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
+  } catch (err) {
+    logError(err);
+    return res.status(500).json({ error: err.message });
   }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  log(`Server running on port ${PORT}`);
 });
