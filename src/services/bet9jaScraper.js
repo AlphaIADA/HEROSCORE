@@ -41,4 +41,11 @@ async function scrapeBet9ja(bookingCode) {
   return result;
 }
 
-module.exports = { scrapeBet9ja };
+async function scrapeBet9jaBooking(bookingCode) {
+  return scrapeBet9ja(bookingCode);
+}
+
+module.exports = {
+  scrapeBet9ja,
+  scrapeBet9jaBooking,
+};
