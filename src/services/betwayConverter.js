@@ -1,4 +1,8 @@
 const { translateMarket } = require('../utils/marketTranslator');
+const SimpleCache = require('../utils/simpleCache');
+const { log } = require('../utils/logger');
+
+const cache = new SimpleCache(5 * 60 * 1000);
 
 /**
  * Convert a Bet9ja bet slip into a Betway compatible format.
@@ -10,6 +14,13 @@ const { translateMarket } = require('../utils/marketTranslator');
 async function convertToBetway(betSlip) {
   if (!betSlip || !Array.isArray(betSlip.bets)) {
     throw new Error('Invalid bet slip supplied');
+  }
+
+  const cacheKey = JSON.stringify(betSlip);
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    log(`Betway convert cache hit for ${betSlip.bookingCode}`);
+    return cached;
   }
 
   const bets = betSlip.bets.map(bet => {
@@ -42,12 +53,14 @@ async function convertToBetway(betSlip) {
   const urlBase = 'https://www.betway.com.ng/betslip?bets=';
   const url = urlBase + encodeURIComponent(JSON.stringify(bets));
 
-  return {
+  const result = {
     platform: 'Betway',
     status: 'converted',
     bets,
     url,
   };
+  cache.set(cacheKey, result);
+  return result;
 }
 
 module.exports = { convertToBetway };
