@@ -1,36 +1,19 @@
-const { similarity } = require('./matchMapper');
+// Utility to translate Bet9ja betting market names to their Betway equivalents.
 
-const MARKET_MAP = {
-  'GG': 'Both Teams To Score - Yes',
-  'Over 2.5': 'Total Goals Over 2.5',
+// Map of Bet9ja market identifiers to Betway market descriptions. Add to this
+// object as needed when new markets need to be supported.
+const marketMap = {
+  "GG": "Both Teams To Score - Yes",
+  "Over 2.5": "Total Goals Over 2.5",
+  "1X": "Double Chance - Home or Draw"
+  // Add more mappings
 };
 
-/**
- * Translate a Bet9ja market description to the closest Betway equivalent.
- * If an exact mapping isn't found, the most similar known market is used.
- *
- * @param {string} bet9jaMarket - Market string scraped from Bet9ja
- * @returns {string} Betway market name
- */
-function translateMarket(bet9jaMarket) {
-  if (!bet9jaMarket) return '';
-
-  if (MARKET_MAP[bet9jaMarket]) {
-    return MARKET_MAP[bet9jaMarket];
-  }
-
-  let bestKey = null;
-  let bestScore = -1;
-
-  for (const key of Object.keys(MARKET_MAP)) {
-    const score = similarity(bet9jaMarket.toLowerCase(), key.toLowerCase());
-    if (score > bestScore) {
-      bestScore = score;
-      bestKey = key;
-    }
-  }
-
-  return MARKET_MAP[bestKey] || bet9jaMarket;
-}
+// Translate a single market string. Returns "Unknown Market" if no mapping is
+// found.
+const translateMarket = (market) => {
+  if (!market) return "Unknown Market";
+  return marketMap[market.trim()] || "Unknown Market";
+};
 
 module.exports = { translateMarket };
