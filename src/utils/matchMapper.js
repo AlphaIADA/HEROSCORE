@@ -57,6 +57,28 @@ function similarity(a, b) {
 }
 
 /**
+ * Basic team matching based on normalised names. Returns the first match from
+ * matchListB that contains the normalised home and away team names.
+ *
+ * @param {string} homeA - Home team from platform A
+ * @param {string} awayA - Away team from platform A
+ * @param {Array<Object>} matchListB - List of fixtures from platform B
+ * @returns {Object|null} Matched fixture or null
+ */
+function matchTeams(homeA, awayA, matchListB = []) {
+  const homeNorm = normalizeTeamName(homeA).toLowerCase();
+  const awayNorm = normalizeTeamName(awayA).toLowerCase();
+
+  const found = matchListB.find(match => {
+    const homeB = normalizeTeamName(match.homeTeam).toLowerCase();
+    const awayB = normalizeTeamName(match.awayTeam).toLowerCase();
+    return homeB.includes(homeNorm) && awayB.includes(awayNorm);
+  });
+
+  return found || null;
+}
+
+/**
  * Attempt to find the Betway event that best matches a Bet9ja event using
  * fuzzy string comparison.  Both home and away team names are normalised and
  * compared along with league and time information if provided.
@@ -102,4 +124,4 @@ function mapMatches(bet9jaEvent, betwayEvents = []) {
   return bestScore >= 0.5 ? bestMatch : null;
 }
 
-module.exports = { mapMatches, normalizeTeamName, similarity };
+module.exports = { mapMatches, normalizeTeamName, similarity, matchTeams };
