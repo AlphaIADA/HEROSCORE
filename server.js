@@ -7,7 +7,7 @@ const { scrape1xBet } = require('./src/services/platforms/oneXBetScraper');
 const { scrapeSportybet } = require('./src/services/platforms/sportybetScraper');
 const { scrapeBetnaija } = require('./src/services/platforms/betnaijaScraper');
 const { scrapeStake } = require('./src/services/platforms/stakeScraper');
-const { convertToBetway } = require('./src/services/betwayConverter');
+const { convertToBetwayFormat } = require('./src/services/betwayConverter');
 const { placeBetOnBetway } = require('./src/services/betwayPlacer');
 const { log, error: logError } = require('./src/utils/logger');
 
@@ -37,7 +37,7 @@ app.post('/convert-ticket', async (req, res) => {
   };
 
   const converters = {
-    betway: convertToBetway,
+    betway: convertToBetwayFormat,
   };
 
   const scrapeFn = scrapers[platformFrom];
@@ -83,7 +83,7 @@ app.post('/place-bet', async (req, res) => {
   try {
     log(`Placing bet from ${platformFrom} using code ${bookingCode}`);
     const betSlip = await scrapeFn(bookingCode);
-    const betwayData = await convertToBetway(betSlip);
+    const betwayData = await convertToBetwayFormat(betSlip);
     await placeBetOnBetway(betwayData);
     return res.json({ status: 'bet placed' });
   } catch (err) {
