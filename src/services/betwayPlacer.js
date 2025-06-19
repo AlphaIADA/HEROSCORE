@@ -3,7 +3,7 @@ const { log } = require('../utils/logger');
 
 /**
  * Log in to Betway and place the provided bet slip.
- * @param {Object} betwayData - Data returned from convertToBetway
+ * @param {Object} betwayData - Data returned from convertToBetwayFormat
  */
 async function placeBetOnBetway(betwayData) {
   const { BETWAY_USERNAME, BETWAY_PASSWORD } = process.env;
