@@ -13,7 +13,13 @@ async function convertToBetway(betSlip) {
   }
 
   const bets = betSlip.bets.map(bet => {
+    if (!bet.homeTeam || !bet.awayTeam) {
+      throw new Error('Game not found on Betway');
+    }
     const translated = translateMarket(bet.market);
+    if (!translated || translated === bet.market) {
+      throw new Error(`Market not found on Betway: ${bet.market}`);
+    }
     let market = translated;
     let selection = '';
 

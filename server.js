@@ -8,6 +8,9 @@ const { convertToBetway } = require('./src/services/betwayConverter');
 const app = express();
 app.use(bodyParser.json());
 
+// Serve basic frontend
+app.use(express.static('public'));
+
 app.use('/api', converterRoutes);
 
 app.post('/convert-ticket', async (req, res) => {
