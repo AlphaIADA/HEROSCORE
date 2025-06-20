@@ -12,3 +12,17 @@
     at async CdpPage.goto (C:\Users\surface book 2\OneDrive\Documents\GitHub\HEROSCORE\node_modules\puppeteer-core\lib\cjs\puppeteer\api\Page.js:574:20)
     at async scrapeBet9ja (C:\Users\surface book 2\OneDrive\Documents\GitHub\HEROSCORE\src\services\bet9jaScraper.js:19:3)
     at async C:\Users\surface book 2\OneDrive\Documents\GitHub\HEROSCORE\server.js:85:21
+[2025-06-20T06:07:18.267Z] ERROR: Error: net::ERR_CERT_DATE_INVALID at https://www.betnaija.com/booking/357BTRQ
+    at navigate (C:\Users\surface book 2\OneDrive\Documents\GitHub\HEROSCORE\node_modules\puppeteer-core\lib\cjs\puppeteer\cdp\Frame.js:184:27)
+    at async Deferred.race (C:\Users\surface book 2\OneDrive\Documents\GitHub\HEROSCORE\node_modules\puppeteer-core\lib\cjs\puppeteer\util\Deferred.js:36:20)
+    at async CdpFrame.goto (C:\Users\surface book 2\OneDrive\Documents\GitHub\HEROSCORE\node_modules\puppeteer-core\lib\cjs\puppeteer\cdp\Frame.js:150:25)
+    at async CdpPage.goto (C:\Users\surface book 2\OneDrive\Documents\GitHub\HEROSCORE\node_modules\puppeteer-core\lib\cjs\puppeteer\api\Page.js:574:20)
+    at async scrapeBetnaija (C:\Users\surface book 2\OneDrive\Documents\GitHub\HEROSCORE\src\services\platforms\betnaijaScraper.js:20:5)
+    at async C:\Users\surface book 2\OneDrive\Documents\GitHub\HEROSCORE\server.js:52:21
+[2025-06-20T06:08:54.589Z] ERROR: Error: net::ERR_CERT_AUTHORITY_INVALID at https://www.betnaija.com/booking/357BTRQ
+    at navigate (C:\Users\surface book 2\OneDrive\Documents\GitHub\HEROSCORE\node_modules\puppeteer-core\lib\cjs\puppeteer\cdp\Frame.js:184:27)
+    at async Deferred.race (C:\Users\surface book 2\OneDrive\Documents\GitHub\HEROSCORE\node_modules\puppeteer-core\lib\cjs\puppeteer\util\Deferred.js:36:20)
+    at async CdpFrame.goto (C:\Users\surface book 2\OneDrive\Documents\GitHub\HEROSCORE\node_modules\puppeteer-core\lib\cjs\puppeteer\cdp\Frame.js:150:25)
+    at async CdpPage.goto (C:\Users\surface book 2\OneDrive\Documents\GitHub\HEROSCORE\node_modules\puppeteer-core\lib\cjs\puppeteer\api\Page.js:574:20)
+    at async scrapeBetnaija (C:\Users\surface book 2\OneDrive\Documents\GitHub\HEROSCORE\src\services\platforms\betnaijaScraper.js:20:5)
+    at async C:\Users\surface book 2\OneDrive\Documents\GitHub\HEROSCORE\server.js:52:21
