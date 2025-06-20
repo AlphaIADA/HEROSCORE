@@ -15,11 +15,28 @@ async function scrapeBet9ja(bookingCode) {
     'https://web.bet9ja.com/Sport/Game.aspx?ids=1&bookingCode=' + bookingCode;
   const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
-  log(`Scraping Bet9ja for ${bookingCode}`);
-  await page.goto(url, { waitUntil: 'networkidle2' });
+  const MAX_RETRIES = 2;
+  const delay = ms => new Promise(res => setTimeout(res, ms));
 
-  // Wait for bet slip container to appear
-  await page.waitForSelector('.coupon-area');
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      log(`Scraping Bet9ja for ${bookingCode} (attempt ${attempt})`);
+      await page.goto(url, { waitUntil: 'networkidle2' });
+      await page.waitForSelector('.coupon-area');
+      break;
+    } catch (err) {
+      if (attempt === MAX_RETRIES) {
+        const message = `Failed to load Bet9ja slip: ${err.message}`;
+        log(message);
+        await browser.close();
+        throw new Error(message);
+      }
+      log(
+        `Attempt ${attempt} failed to load Bet9ja slip: ${err.message}. Retrying...`
+      );
+      await delay(1000);
+    }
+  }
 
   const bets = await page.evaluate(() => {
     const rows = document.querySelectorAll('.coupon-area .eventrow');
