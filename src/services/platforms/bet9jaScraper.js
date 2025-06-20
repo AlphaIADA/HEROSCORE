@@ -18,7 +18,7 @@ async function scrapeBet9jaBooking(code) {
     }
   }
 
-  await page.waitForSelector('.booking-slip-container', { timeout: 10000 });
+  await page.waitForTimeout(4000); // or wait for a slip container
 
   const bets = await page.evaluate(() => {
     const games = Array.from(document.querySelectorAll('.booking-slip-container .event-row'));

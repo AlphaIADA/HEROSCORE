@@ -1,24 +1,30 @@
-document.getElementById('convertForm').addEventListener('submit', async (e) => {
+document.getElementById('convertForm').addEventListener('submit', (e) => {
   e.preventDefault();
 
   const bookingCode = document.getElementById('bookingCode').value.trim();
   const platformFrom = document.getElementById('platformFrom').value;
   const platformTo = document.getElementById('platformTo').value;
-  const resultDiv = document.getElementById('result');
-  resultDiv.textContent = 'Converting...';
+  const statusDiv = document.getElementById('result');
+  statusDiv.textContent = 'Converting...';
 
-  try {
-    const res = await fetch('/convert-ticket', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bookingCode, platformFrom, platformTo })
+  fetch('/convert-ticket', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ platformFrom, platformTo, bookingCode })
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log('Response from server:', data);
+      if (data.error) {
+        statusDiv.textContent = 'Conversion failed: ' + data.error;
+      } else {
+        statusDiv.textContent = 'Conversion successful ✅';
+        statusDiv.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      }
+    })
+    .catch(err => {
+      statusDiv.textContent = err.message;
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Conversion failed');
-    resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
-  } catch (err) {
-    resultDiv.textContent = err.message;
-  }
 });
 
 document.getElementById('placeBetBtn').addEventListener('click', async (e) => {

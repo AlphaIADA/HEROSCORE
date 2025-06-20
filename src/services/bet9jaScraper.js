@@ -23,7 +23,7 @@ async function scrapeBet9jaBooking(code) {
   }
 
   // Wait for the betting slip container to load
-  await page.waitForSelector('.booking-slip-container', { timeout: 10000 });
+  await page.waitForTimeout(4000); // or wait for a slip container
 
   // Scrape games
   const bets = await page.evaluate(() => {
