@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const converterRoutes = require('./src/routes/converterRoutes');
-const { scrapeBet9ja } = require('./src/services/bet9jaScraper');
+const { scrapeBet9jaBooking } = require('./src/services/bet9jaScraper');
 const { scrape1xBet } = require('./src/services/platforms/oneXBetScraper');
 const { scrapeSportybet } = require('./src/services/platforms/sportybetScraper');
 const { scrapeBet9jaBooking: scrapeBetnaija } = require('./src/services/platforms/bet9jaScraper');
@@ -20,41 +20,29 @@ app.use(express.static('public'));
 app.use('/api', converterRoutes);
 
 app.post('/convert-ticket', async (req, res) => {
-  const { platformFrom, platformTo, bookingCode } = req.body;
+  const { bookingCode, platformFrom, platformTo } = req.body;
 
-  if (!platformFrom || !platformTo || !bookingCode) {
-    return res
-      .status(400)
-      .json({ error: 'platformFrom, platformTo and bookingCode are required' });
-  }
-
-  const scrapers = {
-    bet9ja: scrapeBet9ja,
-    '1xbet': scrape1xBet,
-    sportybet: scrapeSportybet,
-    betnaija: scrapeBetnaija,
-    stake: scrapeStake,
-  };
-
-  const converters = {
-    betway: convertToBetwayFormat,
-  };
-
-  const scrapeFn = scrapers[platformFrom];
-  const convertFn = converters[platformTo];
-
-  if (!scrapeFn || !convertFn) {
-    return res.status(400).json({ error: 'Conversion not supported' });
-  }
+  console.log(`[${new Date().toISOString()}] Received convert request:`, req.body);
 
   try {
-    log(`Converting ${bookingCode} from ${platformFrom} to ${platformTo}`);
-    const betSlip = await scrapeFn(bookingCode);
-    const converted = await convertFn(betSlip);
+    if (platformFrom !== 'bet9ja' || platformTo !== 'betway') {
+      return res.status(400).json({ error: 'Conversion not supported' });
+    }
+
+    const bet9jaSlip = await scrapeBet9jaBooking(bookingCode);
+    console.log('SCRAPED SLIP:', bet9jaSlip);
+
+    if (!bet9jaSlip || !bet9jaSlip.bets || bet9jaSlip.bets.length === 0) {
+      return res.status(400).json({ error: 'No bets found or code is invalid' });
+    }
+
+    const converted = convertToBetwayFormat(bet9jaSlip);
+    console.log('CONVERTED:', converted);
+
     return res.json(converted);
   } catch (err) {
-    logError(err);
-    return res.status(500).json({ error: err.message });
+    console.error('CONVERSION ERROR:', err);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -68,7 +56,7 @@ app.post('/place-bet', async (req, res) => {
   }
 
   const scrapers = {
-    bet9ja: scrapeBet9ja,
+    bet9ja: scrapeBet9jaBooking,
     '1xbet': scrape1xBet,
     sportybet: scrapeSportybet,
     betnaija: scrapeBetnaija,
