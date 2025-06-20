@@ -1,68 +1,49 @@
 const puppeteer = require('puppeteer');
-const SimpleCache = require('../utils/simpleCache');
-const { log } = require('../utils/logger');
 
-const cache = new SimpleCache(5 * 60 * 1000); // 5 minute cache
-
-async function scrapeBet9ja(bookingCode) {
-  const cached = cache.get(bookingCode);
-  if (cached) {
-    log(`Bet9ja cache hit for ${bookingCode}`);
-    return cached;
-  }
-
-  const url =
-    'https://web.bet9ja.com/Sport/Game.aspx?ids=1&bookingCode=' + bookingCode;
-  const browser = await puppeteer.launch({ headless: 'new' });
+async function scrapeBet9jaBooking(code) {
+  const browser = await puppeteer.launch({ headless: false }); // false to visually debug
   const page = await browser.newPage();
-  const MAX_RETRIES = 2;
-  const delay = ms => new Promise(res => setTimeout(res, ms));
 
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      log(`Scraping Bet9ja for ${bookingCode} (attempt ${attempt})`);
-      await page.goto(url, { waitUntil: 'networkidle2' });
-      await page.waitForSelector('.coupon-area');
+  await page.goto('https://sports.bet9ja.com/', { waitUntil: 'networkidle2' });
+
+  // Wait for booking code input
+  await page.waitForSelector('input[placeholder="Booking Code"]');
+
+  // Type the code
+  await page.type('input[placeholder="Booking Code"]', code);
+
+  // Click the Load Booking button
+  const buttons = await page.$$('button');
+  for (const btn of buttons) {
+    const text = await page.evaluate(el => el.textContent, btn);
+    if (text.includes('Load Booking')) {
+      await btn.click();
       break;
-    } catch (err) {
-      if (attempt === MAX_RETRIES) {
-        const message = `Failed to load Bet9ja slip: ${err.message}`;
-        log(message);
-        await browser.close();
-        throw new Error(message);
-      }
-      log(
-        `Attempt ${attempt} failed to load Bet9ja slip: ${err.message}. Retrying...`
-      );
-      await delay(1000);
     }
   }
 
+  // Wait for the betting slip container to load
+  await page.waitForSelector('.booking-slip-container', { timeout: 10000 });
+
+  // Scrape games
   const bets = await page.evaluate(() => {
-    const rows = document.querySelectorAll('.coupon-area .eventrow');
-    const results = [];
-    rows.forEach(row => {
-      const teams = row.querySelector('.event-title')?.textContent.trim() || '';
+    const games = Array.from(document.querySelectorAll('.booking-slip-container .event-row'));
+    return games.map(game => {
+      const teams = game.querySelector('.teams')?.textContent || '';
       const [homeTeam, awayTeam] = teams.split(' vs ');
-      const market = row.querySelector('.market')?.textContent.trim() || '';
-      const oddsText = row.querySelector('.selection .price')?.textContent.trim() || '';
-      const odds = parseFloat(oddsText);
-      results.push({ homeTeam, awayTeam, market, odds });
+      const market = game.querySelector('.market')?.textContent || '';
+      const odds = game.querySelector('.odds')?.textContent || '';
+      return {
+        homeTeam: homeTeam?.trim(),
+        awayTeam: awayTeam?.trim(),
+        market: market.trim(),
+        odds: parseFloat(odds)
+      };
     });
-    return results;
   });
 
   await browser.close();
-  const result = { bookingCode, bets };
-  cache.set(bookingCode, result);
-  return result;
+  return { bookingCode: code, bets };
 }
 
-async function scrapeBet9jaBooking(bookingCode) {
-  return scrapeBet9ja(bookingCode);
-}
-
-module.exports = {
-  scrapeBet9ja,
-  scrapeBet9jaBooking,
-};
+module.exports = { scrapeBet9jaBooking };
